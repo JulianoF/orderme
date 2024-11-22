@@ -55,9 +55,25 @@ class DatabaseHelper {
   ''');
   }
 
-  Future<int> addFood(Food food) async {
+  Future<int> updateOrAddFood(Food food) async {
     final db = await instance.database;
-    return await db.insert('foods', food.toMap());
+
+    final existing = await db.query(
+      'foods',
+      where: 'food_name = ?',
+      whereArgs: [food.foodName],
+    );
+
+    if (existing.isNotEmpty) {
+      return await db.update(
+        'foods',
+        {'food_cost': food.foodCost},
+        where: 'food_name = ?',
+        whereArgs: [food.foodName],
+      );
+    } else {
+      return await db.insert('foods', food.toMap());
+    }
   }
 
   Future<List<Food>> getAllFoods() async {

@@ -31,7 +31,6 @@ class _AddFoodState extends State<AddFood> {
     final foodName = _foodNameController.text.trim();
     final foodCostText = _foodCostController.text.trim();
 
-    // Check if fields are empty or invalid
     if (foodName.isEmpty) {
       Fluttertoast.showToast(
         msg: "Food name cannot be empty",
@@ -62,10 +61,10 @@ class _AddFoodState extends State<AddFood> {
 
     final newFood = Food(foodName: foodName, foodCost: foodCost);
 
-    await DatabaseHelper.instance.addFood(newFood);
+    await DatabaseHelper.instance.updateOrAddFood(newFood);
 
     Fluttertoast.showToast(
-      msg: "Food item added successfully",
+      msg: "Food item added/updated successfully",
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
     );

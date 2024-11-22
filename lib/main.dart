@@ -38,6 +38,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, dynamic>> _orders = [];
+  List<Map<String, dynamic>> _filteredOrders = [];
   String query = '';
   bool isLoading = true;
 
@@ -51,6 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final orders = await DatabaseHelper.instance.getAllOrders();
     setState(() {
       _orders = orders;
+      _filteredOrders = orders;
       isLoading = false;
     });
   }
@@ -59,6 +61,16 @@ class _MyHomePageState extends State<MyHomePage> {
     await DatabaseHelper.instance.deleteOrder(orderId);
     setState(() {
       _orders.removeWhere((order) => order['id'] == orderId);
+    });
+  }
+
+  void _filterOrders(String input) {
+    setState(() {
+      query = input;
+      _filteredOrders = _orders.where((order) {
+        final orderDate = order['order_date'] ?? '';
+        return orderDate.contains(query);
+      }).toList();
     });
   }
 
@@ -79,22 +91,18 @@ class _MyHomePageState extends State<MyHomePage> {
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.search),
               ),
-              onChanged: (text) {
-                setState(() {
-                  query = text;
-                });
-              },
+              onChanged: _filterOrders,
             ),
             const SizedBox(height: 15.0),
             Expanded(
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : _orders.isEmpty
+                  :  _filteredOrders.isEmpty
                   ? const Center(child: Text("No Orders Here!!"))
                   : ListView.builder(
-                itemCount: _orders.length,
+                itemCount: _filteredOrders.length,
                 itemBuilder: (context, index) {
-                  final order = _orders[index];
+                  final order =  _filteredOrders[index];
                   final date = order['order_date'] ?? 'Unknown Date';
                   final foodList = List<Food>.from(
                     order['foodList'] ?? [],
